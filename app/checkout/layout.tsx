@@ -1,8 +1,12 @@
-import { cookies } from 'next/headers';
+// This forces Next.js to NOT pre-render the checkout page
+// It prevents the "window is not defined" error
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export default function CheckoutLayout({ children }: { children: React.ReactNode }) {
-  // This forces Next.js to skip static generation for this folder
-  // It prevents the "window is not defined" error during build
-  cookies(); 
+export default function CheckoutLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }
