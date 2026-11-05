@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useSearchParams } from "next/navigation"; // NEW: Import this
@@ -9,18 +9,35 @@ import ProductGrid from "@/components/ProductGrid";
 const categories = ["All", "Bags", "Clothes", "Shoes", "Accessories", "Sportswear"];
 
 export default function ShopPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 pt-24 text-center text-gray-600">
+          Loading shop...
+        </div>
+      }
+    >
+      <ShopContent />
+    </Suspense>
+  );
+}
+
+function ShopContent() {
   const searchParams = useSearchParams(); // NEW: Hook to read URL
   
   // NEW: Automatically set the category based on the link clicked
   const categoryFromUrl = searchParams.get('category') || "All";
   
   const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl);
+  const [previousCategoryFromUrl, setPreviousCategoryFromUrl] =
+    useState(categoryFromUrl);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Update category if the URL changes
-  useEffect(() => {
+  if (categoryFromUrl !== previousCategoryFromUrl) {
+    setPreviousCategoryFromUrl(categoryFromUrl);
     setSelectedCategory(categoryFromUrl);
-  }, [categoryFromUrl]);
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-16">

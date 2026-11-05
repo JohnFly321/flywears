@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ShoppingBag, Heart, Star, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -30,6 +30,22 @@ const formatPrice = (price: number) => {
 };
 
 export default function ProductDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center pt-20">
+          <div className="text-blue-600 font-semibold animate-pulse">
+            Loading product...
+          </div>
+        </div>
+      }
+    >
+      <ProductDetailContent />
+    </Suspense>
+  );
+}
+
+function ProductDetailContent() {
   const params = useParams();
   const productId = params.id as string;
   
