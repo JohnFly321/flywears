@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.20",
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "^3.0.0",
     "@prisma/client": "^6.19.3",
     "@uploadthing/react": "^7.3.3",
     "framer-motion": "^14.6.0",

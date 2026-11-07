@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Upload, CheckCircle, AlertCircle, Sparkles, Package } from "lucide-react";
@@ -16,41 +16,56 @@ export default function SellerDashboard() {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [description, setDescription] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   if (!isLoaded) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="text-blue-600 font-semibold">Loading...</div></div>;
   if (!isSignedIn) { router.push('/sign-in'); return null; }
 
   const handleAiGenerate = async () => {
-    const nameInput = (document.querySelector('input[name="name"]') as HTMLInputElement)?.value;
-    const categoryInput = (document.querySelector('select[name="category"]') as HTMLSelectElement)?.value;
-    
-    if (!nameInput || !categoryInput) {
+    const form = formRef.current;
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const name = formData.get("name");
+    const category = formData.get("category");
+
+    if (typeof name !== "string" || !name.trim() || typeof category !== "string" || !category) {
       setMessage({ type: 'error', text: 'Please enter a Product Name and select a Category first!' });
       return;
     }
 
     setIsAiLoading(true);
-    setMessage({ type: 'success', text: '✨ AI is writing your description...' });
+    setMessage(null);
     
     try {
-      const res = await fetch('/api/ai-description', {
+      const response = await fetch('/api/ai-description', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: nameInput, category: categoryInput }),
+        body: JSON.stringify({ name: name.trim(), category }),
       });
-      const data = await res.json();
-      
-      if (data.description) {
-        const textarea = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement;
-        if (textarea) {
-          textarea.value = data.description;
-          setMessage({ type: 'success', text: '✅ Description generated successfully!' });
-        }
-      } else {
-        setMessage({ type: 'error', text: 'Failed to generate description.' });
+
+      const data = await response.json().catch(() => null) as
+        | { description?: string; error?: string }
+        | null;
+
+      if (!response.ok) {
+        setMessage({
+          type: 'error',
+          text: data?.error || 'Could not generate a description. Please try again.',
+        });
+        return;
       }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Network error.' });
+
+      if (!data || typeof data.description !== 'string' || !data.description.trim()) {
+        setMessage({ type: 'error', text: 'Gemini returned an empty description. Please try again.' });
+        return;
+      }
+
+      setDescription(data.description.trim());
+      setMessage({ type: 'success', text: 'Description generated successfully.' });
+    } catch {
+      setMessage({ type: 'error', text: 'Network error. Please check your connection and try again.' });
     } finally {
       setIsAiLoading(false);
     }
@@ -83,6 +98,7 @@ export default function SellerDashboard() {
       if (response.ok) {
         setMessage({ type: 'success', text: 'Product uploaded successfully!' });
         (e.target as HTMLFormElement).reset();
+        setDescription("");
         setUploadedImages([]);
       } else {
         setMessage({ type: 'error', text: result.error || 'Failed to upload product' });
@@ -117,7 +133,7 @@ export default function SellerDashboard() {
             </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Product Name</label>
               <input name="name" required className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all" placeholder="e.g., Classic Leather Bag" />
@@ -151,13 +167,15 @@ export default function SellerDashboard() {
                   disabled={isAiLoading}
                   className="text-xs bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1.5 rounded-full font-semibold hover:opacity-90 transition-opacity flex items-center gap-1 shadow-md disabled:opacity-50"
                 >
-                  <Sparkles size={14} /> {isAiLoading ? 'Generating...' : 'Generate with AI'}
+                  <Sparkles size={14} /> {isAiLoading ? 'Generating...' : 'Generate with Gemini'}
                 </button>
               </div>
               <textarea 
                 name="description" 
                 required 
                 rows={4} 
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none" 
                 placeholder="Describe the product or let AI do it for you..." 
               />
