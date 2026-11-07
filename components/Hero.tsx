@@ -42,21 +42,21 @@ export default function Hero() {
             Premium bags, clothing, shoes, and accessories delivered to your doorstep.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link href="/shop">
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
+            <Link href="/shop" className="block min-w-0">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-blue-600 text-white rounded-full font-bold text-lg shadow-lg shadow-blue-600/30 hover:bg-blue-500 transition-all flex items-center justify-center gap-2"
+                className="w-full whitespace-nowrap px-3 py-3 text-sm sm:w-auto sm:px-8 sm:py-4 sm:text-lg bg-blue-600 text-white rounded-full font-bold shadow-lg shadow-blue-600/30 hover:bg-blue-500 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
               >
-                Shop Now <ArrowRight size={20} />
+                Shop Now <ArrowRight size={20} className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
               </motion.button>
             </Link>
-            <Link href="/sellers">
+            <Link href="/sellers" className="block min-w-0">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-white/10 text-white border border-white/20 rounded-full font-bold text-lg backdrop-blur-md hover:bg-white/20 transition-all"
+                className="w-full whitespace-nowrap px-3 py-3 text-sm sm:w-auto sm:px-8 sm:py-4 sm:text-lg bg-white/10 text-white border border-white/20 rounded-full font-bold backdrop-blur-md hover:bg-white/20 transition-all"
               >
                 Start Selling
               </motion.button>
